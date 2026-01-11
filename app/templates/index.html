@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phishing Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="header">
+    <h1>WebPhish Detector</h1>
+    <p class="subtitle">Web-Based Phishing Detection System</p>
+</div>
+
+<form method="POST" class="url-form">
+    <label class="url-label">Enter Website URL</label>
+
+    <input
+        type="text"
+        name="url"
+        placeholder="https://example.com"
+        value="{{ url_value }}"
+        required
+        class="url-input"
+    >
+
+    <button type="submit">Analyze URL</button>
+</form>
+
+{# ---------------- SAFE GLOBAL RISK ---------------- #}
+{% set risk = risk_details["Final Risk Score"] if risk_details else 0 %}
+
+{# ---------------- RESULT BLOCK ---------------- #}
+{% if prediction %}
+<div class="result
+    {% if "Phishing" in prediction %}phishing
+    {% elif "Legitimate" in prediction %}legitimate
+    {% else %}invalid{% endif %}">
+
+    <h2>{{ prediction }}</h2>
+
+    {% if risk >= 0.8 %}
+        <span class="badge high">HIGH RISK</span>
+    {% elif risk >= 0.4 %}
+        <span class="badge medium">MEDIUM RISK</span>
+    {% else %}
+        <span class="badge low">LOW RISK</span>
+    {% endif %}
+</div>
+
+{# ---------------- RISK METER ---------------- #}
+<div class="meter">
+    <div class="meter-fill
+        {% if risk >= 0.8 %}meter-high
+        {% elif risk >= 0.4 %}meter-medium
+        {% else %}meter-low{% endif %}"
+        style="width: {{ risk * 100 }}%;">
+    </div>
+</div>
+{% endif %}
+
+{# ---------------- RISK DETAILS ---------------- #}
+{% if risk_details %}
+<div class="section">
+    <h3>Risk Analysis</h3>
+    <ul>
+        {% for k, v in risk_details.items() %}
+            <li><b>{{ k }}:</b> {{ v }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# ---------------- EXPLANATION ---------------- #}
+{% if reasons is not none %}
+<div class="section">
+    <h3>Why this result?</h3>
+    <ul>
+        {% for reason in reasons %}
+            <li>{{ reason }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+</body>
+</html>
